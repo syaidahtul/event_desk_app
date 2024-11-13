@@ -87,6 +87,30 @@ Widget _buildEventCard(BuildContext context, Events event) {
         ),
       );
     },
+    onLongPress: () {
+      showDialog(
+        context: context,
+        builder: (context) {
+          return AlertDialog(
+            title: Text(event.name),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('Start Date: ${event.formattedStartDate}'),
+                Text('End Date: ${event.formattedEndDate}'),
+              ],
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('Close'),
+              ),
+            ],
+          );
+        },
+      );
+    },
     child: Card(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       elevation: 4,
