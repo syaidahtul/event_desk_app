@@ -64,9 +64,9 @@ class TicketProvider with ChangeNotifier {
     final String endpoint = "/events/${event.slug}/offline-tickets/purchase";
     final Uri url = Uri.parse("${AppConstant.eventBaseUrl}$endpoint");
     final SharedPreferences prefs = await SharedPreferences.getInstance();
+    final authToken = prefs.getString('authToken');
     final userJson = prefs.getString('userDetails');
     Map<String, dynamic> user = jsonDecode(userJson!);
-    final authToken = prefs.getString('authToken');
 
     final body = {
       "event_id": event.id,

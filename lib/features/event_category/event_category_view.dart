@@ -38,7 +38,13 @@ class EventCategoryView extends StatelessWidget {
               const SizedBox(height: 16),
               _buildTicketSummary(context),
               const SizedBox(height: 16),
-              _buildBuyButton(context, event),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  _buildResetButton(context),
+                  _buildBuyButton(context, event),
+                ],
+              )
             ],
           ),
         ),
@@ -60,6 +66,14 @@ class EventCategoryView extends StatelessWidget {
                     width: 70,
                     height: 70,
                     fit: BoxFit.contain,
+                    errorBuilder: (context, error, stackTrace) {
+                      return Image.asset(
+                        'assets/images/placeholder_logo.png',
+                        width: 70,
+                        height: 70,
+                        fit: BoxFit.contain,
+                      );
+                    },
                   ),
                 )
               : Padding(
@@ -163,35 +177,72 @@ class EventCategoryView extends StatelessWidget {
   }
 
   Widget _buildBuyButton(BuildContext context, Events event) {
-    return Align(
-      alignment: Alignment.centerRight,
-      child: CustomButtonWidget(
-        onPressed: () {
-          final manager = Provider.of<TicketProvider>(context, listen: false);
+    return CustomButtonWidget(
+      onPressed: () {
+        final manager = Provider.of<TicketProvider>(context, listen: false);
 
-          // Retrieve the selected tickets with non-zero quantities
-          final selectedTickets = manager.ticketCounts.entries
-              .where((entry) => entry.value > 0)
-              .map((entry) => {
-                    "id": entry.key,
-                    "quantity": entry.value,
-                  })
-              .toList();
-
-          // Navigate to TicketPayment and pass the event and selectedTickets
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => TicketPayment(
-                event: event,
-                selectedTickets: selectedTickets,
-              ),
-            ),
+        // Check if any tickets have been selected
+        if (manager.totalTickets == 0) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text("Please select at least one ticket.")),
           );
-        },
-        tooltip: 'Confirm Purchase',
-        btnName: 'Confirm Purchase',
-      ),
+          return;
+        }
+
+        // Only expose selected tickets with non-zero quantity
+        final selectedTickets = manager.ticketCounts.entries
+            .where((entry) => entry.value > 0)
+            .map((entry) => {
+                  "id": entry.key,
+                  "quantity": entry.value,
+                })
+            .toList();
+
+        // Navigate to TicketPayment, passing event and selectedTickets
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => TicketPayment(
+              event: event,
+              selectedTickets: selectedTickets,
+            ),
+          ),
+        );
+      },
+      tooltip: 'Confirm Purchase',
+      btnName: 'Confirm Purchase',
+    );
+  }
+
+  Widget _buildResetButton(BuildContext context) {
+    return CustomButtonWidget(
+      onPressed: () async {
+        // Show confirmation dialog before resetting tickets
+        final confirmReset = await showDialog<bool>(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: const Text("Reset Tickets"),
+            content: const Text("Are you sure you want to reset the tickets?"),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(false),
+                child: const Text("Cancel"),
+              ),
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(true),
+                child: const Text("Reset"),
+              ),
+            ],
+          ),
+        );
+
+        if (confirmReset ?? false) {
+          Provider.of<TicketProvider>(context, listen: false)
+              .resetTicketCounts();
+        }
+      },
+      tooltip: 'Reset Tickets',
+      btnName: 'Reset Tickets',
     );
   }
 }
