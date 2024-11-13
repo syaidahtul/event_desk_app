@@ -1,10 +1,8 @@
-import 'package:event_deskop_app/features/auth/auth_provider.dart';
+import 'package:event_deskop_app/features/auth/logout.dart';
 import 'package:event_deskop_app/features/event_category/event_category_view.dart';
 import 'package:event_deskop_app/features/events/events_service.dart';
-import 'package:event_deskop_app/main.dart';
 import 'package:event_deskop_app/models/events.dart';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 
 class EventsView extends StatefulWidget {
   const EventsView({super.key});
@@ -41,16 +39,7 @@ class _EventsViewState extends State<EventsView> {
         title: const Text("Event App"),
         actions: [
           IconButton(
-            onPressed: () async {
-              final authService =
-                  Provider.of<AuthProvider>(context, listen: false);
-              await authService.logout(); // Call logout once
-
-              // Navigate to LoginPage after logout
-              Navigator.of(context).pushReplacement(
-                MaterialPageRoute(builder: (context) => const LoginPage()),
-              );
-            },
+            onPressed: () => logoutAndNavigate(context),
             icon: const Icon(Icons.logout),
           ),
         ],
